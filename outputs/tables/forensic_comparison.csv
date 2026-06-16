@@ -1,0 +1,3 @@
+model_id,family,course_topic,features,accuracy,precision,recall,f1,roc_auc,pr_auc,kappa
+forensic_residual_pca_rbfsvc,classical_kernel_svm,hand-engineered residual co-occurrence features; StandardScaler; PCA whitening; RBF SVM,residual_cooc128,0.8152101400933957,0.8042498390212492,0.8332221480987325,0.8184796854521625,0.8946093036896735,0.8949210063846973,0.6304202801867912
+stats_hgb,classical_ensemble,hand-engineered color/texture/frequency statistics; gradient boosting,stats,0.7311541027351568,0.727810650887574,0.7384923282188125,0.733112582781457,0.8094535783473171,0.804887877689856,0.4623082054703136
