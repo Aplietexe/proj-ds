@@ -10,81 +10,63 @@ co-occurrence features, PCA/whitening, and an RBF-kernel SVM.
 The raw Kaggle data is linked at:
 
 ```text
-data/raw/real-vs-fake-faces-stylegan3 -> KaggleHub cache
+data/raw/real-vs-fake-faces-stylegan3 -> KaggleHub download directory
 ```
 
-Run the full pipeline:
+Run the project pipeline:
 
 ```bash
-uv run python scripts/build_manifest.py
-uv run python scripts/extract_features.py --jobs 8
-uv run python scripts/run_experiments.py --mode full
-uv run python scripts/build_report.py
+uv run python -m proj_ds.dataset
+uv run python -m proj_ds.features
+uv run python -m proj_ds.planned_models
+uv run python -m proj_ds.forensic_residual
 ```
 
-If the raw link is missing, download it first:
+If the feature matrices already exist, rerun only the models:
 
 ```bash
-uv run --with kagglehub python scripts/download_data.py
-```
-
-For a faster smoke test, use:
-
-```bash
-uv run python scripts/run_experiments.py --mode quick --top-n 4
-```
-
-Run the stronger course-aligned forensic SVM method:
-
-```bash
-uv run python scripts/run_forensic_residual_svm.py
-uv run python scripts/build_report.py
+uv run python -m proj_ds.planned_models
+uv run python -m proj_ds.forensic_residual
 ```
 
 ## Outputs
 
-- `data/processed/manifest.csv`: labels, image audit fields, SHA-256, pHash, dHash.
-- `data/processed/splits.csv`: stratified train/validation/test split.
-- `data/processed/features.npz`: cached pixel, color, texture, HOG and frequency features.
-- `data/processed/residual_cooc128.npy`: cached residual co-occurrence features.
-- `outputs/tables/model_metrics.csv`: locked test metrics.
-- `outputs/tables/forensic_metrics.json`: residual SVM validation/test metrics.
-- `outputs/tables/forensic_comparison.csv`: residual SVM vs. best earlier classical model.
-- `outputs/tables/forensic_test_predictions.csv`: residual SVM locked-test predictions.
-- `outputs/tables/validation_results.csv`: validation search results.
-- `outputs/tables/ablation_metrics.csv`: feature-family ablations.
-- `outputs/tables/robustness_metrics.csv`: resolution, JPEG and crop checks.
+- `data/processed/splits.csv`: labels, image fields, SHA-256 hashes, and the stratified train/validation/test split.
+- `data/processed/features.npz`: planned color, texture, HOG, frequency, and raw-pixel feature families.
+- `data/processed/residual_cooc128.npy`: residual co-occurrence feature matrix.
+- `outputs/models/pca_all_rbfsvc_k200.joblib`: selected planned-method winner from the original matrix.
 - `outputs/models/forensic_residual_pca_rbfsvc.joblib`: selected residual PCA-RBF SVM.
-- `outputs/figures/`: EDA, feature and model evaluation plots.
-- `reports/final_report.md`: final write-up in Spanish using the course vocabulary.
+- `outputs/figures/final_residual_evaluation.png`: final residual confusion matrix, ROC curve, and precision-recall curve.
+- `reports/final_report.md`: hand-written final write-up in Spanish using the course vocabulary.
+
+The model scripts print validation and locked-test metrics directly instead of
+writing separate result tables.
 
 ## Final Result
 
 The strongest course-aligned method is `forensic_residual_pca_rbfsvc`: residual
-co-occurrence features, `StandardScaler`, PCA whitening, and an RBF SVM. It
-selects a stratified 6,000-image training subsample by validation ROC-AUC and
-chooses the decision threshold on validation accuracy. On the locked test split
-it reached:
+co-occurrence features, `StandardScaler`, PCA whitening, and an RBF SVM trained
+on the full training split. It chooses the decision threshold on validation
+accuracy. On the locked test split it reached:
 
 | metric | value |
 | --- | ---: |
-| accuracy | 0.815 |
-| F1 | 0.818 |
-| ROC-AUC | 0.895 |
-| PR-AUC | 0.895 |
-| Cohen's kappa | 0.630 |
+| accuracy | 0.821 |
+| F1 | 0.820 |
+| ROC-AUC | 0.905 |
+| PR-AUC | 0.907 |
+| Cohen's kappa | 0.641 |
 
-The earlier `stats_hgb` baseline, a HistGradientBoosting classifier over
-color/texture/frequency statistics, reached locked-test accuracy 0.731. See
-`reports/final_report.md` for the full discussion, plots, ablations, bootstrap
-confidence intervals, McNemar comparison, robustness checks, and residual SVM
-comparison.
+The planned-method winner is `pca_all_rbfsvc_k200`, an RBF SVM over the combined
+handcrafted feature matrix after scaling and PCA whitening. It reached
+locked-test accuracy `0.743`. The residual SVM was added afterward as the
+flagship course-aligned method and improves the locked-test accuracy to `0.821`.
 
 ## Methodological guardrails
 
 - `fake = 1`, `real = 0`.
 - Filename, folder order and metadata are not used as model features.
-- Hashes and perceptual hashes are computed before splitting.
+- SHA-256 hashes are computed before splitting.
 - Scaling, PCA and whitening are inside sklearn pipelines.
 - Validation chooses hyperparameters; the locked test set is evaluated afterward.
-- The residual SVM uses the same locked split and selects its subsample seed only through validation metrics.
+- The residual SVM uses the same locked split and chooses only its decision threshold on validation metrics.

@@ -173,6 +173,7 @@ dependencies = [
     "jupyterlab==4.5.3",
     "jupyterlab_pygments==0.3.0",
     "jupyterlab_server==2.28.0",
+    "kagglehub>=1.0.2",
     "keras==3.13.2",
     "kerykeion==5.7.1",
     "kiwisolver==1.5.0",
@@ -308,6 +309,7 @@ dependencies = [
     "pyproj==3.7.2",
     "pyprover==0.6.2",
     "PyRect==0.2.0",
+    "pyright>=1.1.410",
     "PyScreeze==1.0.1",
     "pyshp==2.3.1",
     "pyswisseph==2.10.3.2",
@@ -450,6 +452,13 @@ dependencies = [
 
 [tool.uv]
 required-version = ">=0.10.0"
+
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

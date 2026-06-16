@@ -57,3 +57,5 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
+## Theory of mind
+We are doing a report to be delivered as a final result and writing code that will only be seen by my teammates. I need you to really think twice about things and have theory of mind here. If I tell you not to do X, then just don't do X, don't say in the report "we don't do X" in the same way that we don't say that we had lunch while we trained the models. If I tell you to keep things aligned with the class content, don't say in the report "class-aligned", because of course it should be. You need to understand the difference between private process and public results. This is a report, not a diary. You also need to keep a mental model of the reader in your mind. Not because you know what "forensic" means or you found a paper about it, it means that the reader should have the slightest idea of what that word means. The knowledge of the reader is exactly the class content in ./md. 
