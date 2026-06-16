@@ -1,9 +1,9 @@
 # Real vs Fake Faces: Classical ML Final Project
 
-This repo implements the project described in `plan.md`: a course-aligned,
-classical machine-learning workflow for detecting StyleGAN3-generated faces.
-The strongest method stays within the class scope: handcrafted residual
-co-occurrence features, PCA/whitening, and an RBF-kernel SVM.
+This repo implements the project described in `plan.md`: a classical
+machine-learning workflow for detecting StyleGAN3-generated faces. The strongest
+method uses handcrafted residual texture features, PCA/whitening, and an
+RBF-kernel SVM.
 
 ## Reproduce
 
@@ -19,14 +19,14 @@ Run the project pipeline:
 uv run python -m proj_ds.dataset
 uv run python -m proj_ds.features
 uv run python -m proj_ds.planned_models
-uv run python -m proj_ds.forensic_residual
+uv run python -m proj_ds.residual_texture
 ```
 
 If the feature matrices already exist, rerun only the models:
 
 ```bash
 uv run python -m proj_ds.planned_models
-uv run python -m proj_ds.forensic_residual
+uv run python -m proj_ds.residual_texture
 ```
 
 ## Outputs
@@ -35,16 +35,14 @@ uv run python -m proj_ds.forensic_residual
 - `data/processed/features.npz`: planned color, texture, HOG, frequency, and raw-pixel feature families.
 - `data/processed/residual_cooc128.npy`: residual co-occurrence feature matrix.
 - `outputs/models/pca_all_rbfsvc_k200.joblib`: selected planned-method winner from the original matrix.
-- `outputs/models/forensic_residual_pca_rbfsvc.joblib`: selected residual PCA-RBF SVM.
-- `outputs/figures/final_residual_evaluation.png`: final residual confusion matrix, ROC curve, and precision-recall curve.
-- `reports/final_report.md`: hand-written final write-up in Spanish using the course vocabulary.
+- `outputs/models/residual_texture_pca_rbfsvc.joblib`: selected residual texture PCA-RBF SVM.
 
 The model scripts print validation and locked-test metrics directly instead of
 writing separate result tables.
 
 ## Final Result
 
-The strongest course-aligned method is `forensic_residual_pca_rbfsvc`: residual
+The strongest method is `residual_texture_pca_rbfsvc`: residual
 co-occurrence features, `StandardScaler`, PCA whitening, and an RBF SVM trained
 on the full training split. It chooses the decision threshold on validation
 accuracy. On the locked test split it reached:
@@ -60,7 +58,7 @@ accuracy. On the locked test split it reached:
 The planned-method winner is `pca_all_rbfsvc_k200`, an RBF SVM over the combined
 handcrafted feature matrix after scaling and PCA whitening. It reached
 locked-test accuracy `0.743`. The residual SVM was added afterward as the
-flagship course-aligned method and improves the locked-test accuracy to `0.821`.
+strongest method and improves the locked-test accuracy to `0.821`.
 
 ## Methodological guardrails
 
