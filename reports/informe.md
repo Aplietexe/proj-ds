@@ -151,7 +151,7 @@ La siguiente tabla está ordenada por ROC-AUC en validación. Se reportan tambi�
 
 ![Comparación resumida de validación](figures/12_validacion_roc_auc_modelos_resumida.png)
 
-![Métricas de validación top 12](figures/11_validacion_metricas_top12.png)
+![Métricas resumidas de validación](figures/13_validacion_metricas_modelos_resumida.png)
 
 La comparación inicial, antes de agregar diferencias locales de píxeles, dejaba como mejor candidato a la **SVM RBF con PCA sobre variables construidas y 200 componentes**. Luego, la representación de diferencias locales mejoró claramente ese resultado en validación.
 
@@ -247,3 +247,4 @@ Figuras:
 - `reports/figures/10_validacion_roc_auc_modelos.png`
 - `reports/figures/11_validacion_metricas_top12.png`
 - `reports/figures/12_validacion_roc_auc_modelos_resumida.png`
+- `reports/figures/13_validacion_metricas_modelos_resumida.png`

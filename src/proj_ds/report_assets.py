@@ -519,7 +519,10 @@ def plot_validation_top_metrics(results: list[ValidationResult]) -> None:
     axis.set_ylabel("")
     axis.set_title("Metricas de validacion para los modelos resumidos")
     axis.legend(title="")
-    save_current_figure("11_validacion_metricas_top12.png")
+    save_current_figure(
+        "11_validacion_metricas_top12.png",
+        "13_validacion_metricas_modelos_resumida.png",
+    )
 
 
 def plot_confusion_matrix(result: ModelResult) -> None:
@@ -797,9 +800,10 @@ def metric_label(value: MetricName) -> str:
     return labels[value]
 
 
-def save_current_figure(filename: str) -> None:
+def save_current_figure(filename: str, *additional_filenames: str) -> None:
     plt.tight_layout()
-    plt.savefig(FIGURES / filename, dpi=180, bbox_inches="tight")
+    for current_filename in (filename, *additional_filenames):
+        plt.savefig(FIGURES / current_filename, dpi=180, bbox_inches="tight")
     plt.close()
 
 
