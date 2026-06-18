@@ -75,6 +75,7 @@ class ModelResult:
 @dataclass(frozen=True)
 class ValidationResult:
     public_name: str
+    model_group: str
     representation: str
     preprocessing: str
     feature_dim: int
@@ -106,6 +107,7 @@ def generate_report_assets() -> None:
     plot_feature_dimensions(data)
     plot_metric_comparison([planned_result, residual_result])
     plot_validation_roc_auc(all_validation_results)
+    plot_validation_roc_auc_compact(all_validation_results)
     plot_validation_top_metrics(all_validation_results)
     plot_confusion_matrix(residual_result)
     plot_roc_pr_curves(residual_result)
@@ -136,6 +138,7 @@ def evaluate_planned_validation_models(
         results.append(
             ValidationResult(
                 public_name=public_model_name(candidate.model_id),
+                model_group=validation_model_group(candidate.model_id),
                 representation=feature_label(candidate.features),
                 preprocessing=preprocessing_label(candidate.model_id),
                 feature_dim=int(x.shape[1]),
@@ -242,6 +245,7 @@ def evaluate_residual_model() -> tuple[ModelResult, ValidationResult]:
         ),
         ValidationResult(
             public_name=public_name,
+            model_group="residual_texture_svm",
             representation="Diferencias locales de pixeles",
             preprocessing="Estandarizacion + PCA con whitening",
             feature_dim=int(features.shape[1]),
@@ -447,9 +451,48 @@ def plot_validation_roc_auc(results: list[ValidationResult]) -> None:
     save_current_figure("10_validacion_roc_auc_modelos.png")
 
 
+def plot_validation_roc_auc_compact(results: list[ValidationResult]) -> None:
+    ordered = sorted(
+        compact_validation_results(results),
+        key=lambda result: result.metrics["roc_auc"],
+    )
+    frame = pd.DataFrame(
+        {
+            "modelo": [compact_model_name(result.model_group) for result in ordered],
+            "roc_auc": [result.metrics["roc_auc"] for result in ordered],
+        }
+    )
+    plt.figure(figsize=(12, 8))
+    axis = sns.barplot(data=frame, x="roc_auc", y="modelo", color="#4C78A8")
+    axis.set_xlim(0, 1)
+    axis.set_xlabel("ROC-AUC en validacion")
+    axis.set_ylabel("")
+    axis.set_title("Comparacion resumida de modelos en validacion")
+    save_current_figure("12_validacion_roc_auc_modelos_resumida.png")
+
+
+def compact_validation_results(
+    results: list[ValidationResult],
+) -> list[ValidationResult]:
+    excluded_groups = {"linear_svm_single_feature"}
+    selected: dict[str, ValidationResult] = {}
+    for result in results:
+        if result.model_group in excluded_groups:
+            continue
+        if result.model_group not in selected:
+            selected[result.model_group] = result
+            continue
+        current = selected[result.model_group]
+        if result.metrics["roc_auc"] > current.metrics["roc_auc"]:
+            selected[result.model_group] = result
+    return list(selected.values())
+
+
 def plot_validation_top_metrics(results: list[ValidationResult]) -> None:
     ordered = sorted(
-        results, key=lambda result: result.metrics["roc_auc"], reverse=True
+        compact_validation_results(results),
+        key=lambda result: result.metrics["roc_auc"],
+        reverse=True,
     )[:12]
     selected_metrics: tuple[MetricName, ...] = (
         "accuracy",
@@ -463,7 +506,7 @@ def plot_validation_top_metrics(results: list[ValidationResult]) -> None:
     metric_values: list[float] = []
     for result in ordered:
         for metric in selected_metrics:
-            model_names.append(result.public_name)
+            model_names.append(compact_model_name(result.model_group))
             metric_names.append(metric_label(metric))
             metric_values.append(result.metrics[metric])
     frame = pd.DataFrame(
@@ -474,7 +517,7 @@ def plot_validation_top_metrics(results: list[ValidationResult]) -> None:
     axis.set_xlim(0, 1)
     axis.set_xlabel("Valor en validacion")
     axis.set_ylabel("")
-    axis.set_title("Metricas de validacion para los modelos mejor ordenados")
+    axis.set_title("Metricas de validacion para los modelos resumidos")
     axis.legend(title="")
     save_current_figure("11_validacion_metricas_top12.png")
 
@@ -651,6 +694,64 @@ def public_model_name(model_id: str) -> str:
         "pca_all_mlp_k200": "Red neuronal con PCA sobre variables construidas (200 comp.)",
     }
     return labels[model_id]
+
+
+def validation_model_group(model_id: str) -> str:
+    groups = {
+        "dummy_stratified": "baseline",
+        "raw_gray32_gnb": "naive_bayes_raw_gray",
+        "color_logreg": "logreg_color",
+        "texture_sgdsvm": "linear_svm_single_feature",
+        "frequency_sgdsvm": "linear_svm_single_feature",
+        "hog_sgdsvm_alpha0.0001": "linear_svm_single_feature",
+        "all_sgdsvm_alpha0.0001": "linear_svm_all",
+        "stats_tree": "tree_stats",
+        "stats_rf": "random_forest_stats",
+        "stats_hgb": "gradient_boosting_stats",
+        "pca_raw_logreg_k100": "pca_raw_logreg",
+        "pca_raw_knn_k100_n11": "pca_raw_knn",
+        "pca_all_rbfsvc_k100": "pca_all_rbfsvc",
+        "pca_all_lda": "pca_all_lda",
+        "pca_all_qda": "pca_all_qda",
+        "raw_gray32_sgdlog_alpha0.001": "sgd_logreg_raw_gray",
+        "raw_gray32_sgdsvm_alpha0.001": "linear_svm_single_feature",
+        "raw_gray32_sgdlog_alpha0.0001": "sgd_logreg_raw_gray",
+        "raw_gray32_sgdsvm_alpha0.0001": "linear_svm_single_feature",
+        "raw_gray32_sgdlog_alpha1e-05": "sgd_logreg_raw_gray",
+        "raw_gray32_sgdsvm_alpha1e-05": "linear_svm_single_feature",
+        "hog_sgdsvm_alpha0.001": "linear_svm_single_feature",
+        "all_sgdsvm_alpha0.001": "linear_svm_all",
+        "hog_sgdsvm_alpha1e-05": "linear_svm_single_feature",
+        "all_sgdsvm_alpha1e-05": "linear_svm_all",
+        "pca_raw_logreg_k200": "pca_raw_logreg",
+        "pca_raw_knn_k200_n11": "pca_raw_knn",
+        "pca_all_rbfsvc_k200": "pca_all_rbfsvc",
+        "pca_all_mlp_k100": "pca_all_mlp",
+        "pca_all_mlp_k200": "pca_all_mlp",
+    }
+    return groups[model_id]
+
+
+def compact_model_name(model_group: str) -> str:
+    labels = {
+        "baseline": "Baseline aleatorio estratificado",
+        "naive_bayes_raw_gray": "Naive Bayes Gaussiano sobre pixeles grises",
+        "logreg_color": "Regresion logistica sobre color",
+        "linear_svm_single_feature": "SVM lineal sobre una familia de variables",
+        "linear_svm_all": "SVM lineal sobre variables construidas",
+        "tree_stats": "Arbol de decision sobre estadisticos",
+        "random_forest_stats": "Random Forest sobre estadisticos",
+        "gradient_boosting_stats": "Gradient Boosting sobre estadisticos",
+        "pca_raw_logreg": "Regresion logistica con PCA sobre pixeles grises",
+        "pca_raw_knn": "k-NN con PCA sobre pixeles grises",
+        "pca_all_rbfsvc": "SVM RBF con PCA sobre variables construidas",
+        "pca_all_lda": "LDA con PCA sobre variables construidas",
+        "pca_all_qda": "QDA con PCA sobre variables construidas",
+        "sgd_logreg_raw_gray": "Regresion logistica SGD sobre pixeles grises",
+        "pca_all_mlp": "Red neuronal con PCA sobre variables construidas",
+        "residual_texture_svm": "SVM con PCA sobre diferencias locales de pixeles",
+    }
+    return labels[model_group]
 
 
 def preprocessing_label(model_id: str) -> str:

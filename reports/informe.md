@@ -149,7 +149,7 @@ La siguiente tabla está ordenada por ROC-AUC en validación. Se reportan tambi�
 | 30 | SVM lineal sobre textura | Textura | 0.570 | 0.549 | 0.596 | 0.560 | 0.140 |
 | 31 | Baseline aleatorio estratificado | Color | 0.499 | 0.501 | 0.499 | 0.500 | -0.002 |
 
-![Comparación completa de validación](figures/10_validacion_roc_auc_modelos.png)
+![Comparación resumida de validación](figures/12_validacion_roc_auc_modelos_resumida.png)
 
 ![Métricas de validación top 12](figures/11_validacion_metricas_top12.png)
 
@@ -246,3 +246,4 @@ Figuras:
 - `reports/figures/09_diferencias_locales.png`
 - `reports/figures/10_validacion_roc_auc_modelos.png`
 - `reports/figures/11_validacion_metricas_top12.png`
+- `reports/figures/12_validacion_roc_auc_modelos_resumida.png`
